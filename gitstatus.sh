@@ -10,8 +10,8 @@ count_lines() { echo "$1" | egrep -c "^$2" ; }
 all_lines() { echo "$1" | grep -v "^$" | wc -l ; }
 
 # change those symbols to whatever you prefer
-symbols_ahead='↑·'
-symbols_behind='↓·'
+symbols_ahead='\e[92m↑'
+symbols_behind='\e[31m↓'
 symbols_prehash=':'
 
 gitsym=`git symbolic-ref HEAD`
@@ -38,11 +38,6 @@ if [[ -n "$GIT_PROMPT_IGNORE_STASH" ]]; then
   num_stashed=0
 else	
   num_stashed=`git stash list | wc -l`
-fi
-
-clean=0
-if (( num_changed == 0 && num_staged == 0 && num_U == 0 && num_untracked == 0 && num_stashed == 0 )) ; then
-  clean=1
 fi
 
 remote=
@@ -86,7 +81,7 @@ if [[ -z "$remote" ]] ; then
   remote='.'
 fi
 
-for w in "$branch" "$remote" $num_staged $num_conflicts $num_changed $num_untracked $num_stashed $clean ; do
+for w in "$branch" "$remote" $num_staged $num_conflicts $num_changed $num_untracked $num_stashed ; do
   echo "$w"
 done
 
