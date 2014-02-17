@@ -2,21 +2,21 @@
 
 # define colors
 
-BLACK="\e[30m"
-BLACK_HI="\e[90m"
-RED="\e[31m"
-RED_HI="\e[91m"
-GREEN="\e[32m"
-GREEN_HI="\e[92m"
-YELLOW="\e[33m"
-YELLOW_HI="\e[93m"
-BLUE="\e[34m"
-BLUE_HI="\e[94m"
-CYAN="\e[36m"
-CYAN_HI="\e[96m"
-WHITE="\e[37m"
-WHITE_HI="\e[97m"
-RESET="\e[0m"
+BLACK="\001\e[30m\002"
+BLACK_HI="\001\e[90m\002"
+RED="\001\e[31m\002"
+RED_HI="\001\e[91m\002"
+GREEN="\001\e[32m\002"
+GREEN_HI="\001\e[92m\002"
+YELLOW="\001\e[33m\002"
+YELLOW_HI="\001\e[93m\002"
+BLUE="\001\e[34m\002"
+BLUE_HI="\001\e[94m\002"
+CYAN="\001\e[36m\002"
+CYAN_HI="\001\e[96m\002"
+WHITE="\001\e[37m\002"
+WHITE_HI="\001\e[97m\002"
+RESET="\001\e[0m\002"
 
 # define prompt variables
 
@@ -97,6 +97,5 @@ if [[ $GIT_STASHED -ne 0 ]]; then
   STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_STASHED}${GIT_STASHED}"
 fi
 
-# and then print it out
 echo -e "${STATUS}${PROMPT_END}${RESET}"
 exit 0 
