@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# general settings
+
+FETCH_TIMEOUT=5
+
 # define colors
 
 BLACK="\001\e[30m\002"
@@ -31,6 +35,14 @@ PREFIX_UNTRACKED="${BLUE}…"       # the number of untracked files/dirs
 PREFIX_STASHED="${YELLOW}⚑"         # the number of stashed files/dir
 
 
+function async_run()
+{
+  {
+    $1 &> /dev/null
+  }&
+}
+
+
 # determine path to gitstatus.sh
 
 SOURCE="${BASH_SOURCE[0]}"
@@ -48,19 +60,30 @@ GIT_STATUS_SCRIPT="$DIR/gitstatus.sh"
 #   Start execution
 #
 
-repo=`git rev-parse --show-toplevel 2> /dev/null`
+REPO=`git rev-parse --show-toplevel 2> /dev/null`
 if [[ $? -ne 0 ]]; then
   # exit if we're not in a git directory  
   exit 0
 fi
+
+# fetch from repo if local is stale for more than $FETCH_TIMEOUT minutes
+FETCH_HEAD="$REPO/.git/FETCH_HEAD"
+if [[ ! -e "${FETCH_HEAD}"  ||  -e `find "${FETCH_HEAD}" -mmin +${FETCH_TIMEOUT}` ]]; then
+  if [[ -n $(git remote show) ]]; then
+    (
+      async_run "git fetch --quiet"
+      disown -h
+    )
+  fi
+fi
+
+# retrieve the branch status
 
 GIT_STATUS=($($GIT_STATUS_SCRIPT 2>/dev/null))
 if [[ -z $GIT_STATUS ]]; then
   # exit if we couldn't retrieve the status
   exit 1
 fi
-
-# get the branch status
 
 GIT_BRANCH=${GIT_STATUS[0]}
 GIT_REMOTE=${GIT_STATUS[1]}
