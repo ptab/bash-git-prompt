@@ -28,19 +28,11 @@ PROMPT_START="${BLACK_HI}("       # start of the git info string
 PROMPT_END="${BLACK_HI})"         # the end of the git info string
 PROMPT_SEPARATOR="${BLACK_HI}|"   # separates each item
 PREFIX_BRANCH="${BLUE_HI}"        # the git branch that is active in the current directory
-PREFIX_STAGED="${GREEN_HI}✚"      # the number of staged files/directories
-PREFIX_CONFLICTS="${RED_HI}✖"     # the number of files in conflict
-PREFIX_CHANGED="${GREEN}●"        # the number of changed files
-PREFIX_UNTRACKED="${BLUE}…"       # the number of untracked files/dirs
-PREFIX_STASHED="${YELLOW}⚑"         # the number of stashed files/dir
-
-
-function async_run()
-{
-  {
-    $1 &> /dev/null
-  }&
-}
+PREFIX_STAGED="${GREEN_HI}+"      # the number of staged files/directories
+PREFIX_CONFLICTS="${RED_HI}×"     # the number of files in conflict
+PREFIX_CHANGED="${GREEN}Δ"        # the number of changed files
+PREFIX_UNTRACKED="${BLUE}?"       # the number of untracked files/dirs
+PREFIX_STASHED="${YELLOW}ʂ"       # the number of stashed files/dir
 
 
 # determine path to gitstatus.sh
@@ -70,10 +62,7 @@ fi
 FETCH_HEAD="$REPO/.git/FETCH_HEAD"
 if [[ ! -e "${FETCH_HEAD}"  ||  -e `find "${FETCH_HEAD}" -mmin +${FETCH_TIMEOUT}` ]]; then
   if [[ -n $(git remote show) ]]; then
-    (
-      async_run "git fetch --quiet"
-      disown -h
-    )
+    ( git fetch --quiet &> /dev/null) &
   fi
 fi
 

@@ -5,7 +5,7 @@
 #
 # Alan K. Stebbens <aks@stebbens.org> [http://github.com/aks]
 
-shopt -s extglob
+#shopt -s extglob
 
 # helper functions
 count_lines() { echo "$1" | egrep -c "^$2" ; }
