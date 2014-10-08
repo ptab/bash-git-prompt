@@ -12,8 +12,8 @@ count_lines() { echo "$1" | egrep -c "^$2" ; }
 all_lines() { echo "$1" | grep -v "^$" | wc -l ; }
 
 # change those symbols to whatever you prefer
-symbols_ahead='\001\e[92m\002↑'
-symbols_behind='\001\e[31m\002↓'
+symbols_ahead='\001\x1B[92m\002↑'
+symbols_behind='\001\x1B[31m\002↓'
 symbols_prehash=':'
 
 symb_ref=`git symbolic-ref HEAD 2>&1`
