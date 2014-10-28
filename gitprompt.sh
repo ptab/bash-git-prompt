@@ -27,6 +27,7 @@ RESET="\001\x1B[0m\002"
 PROMPT_START="${BLACK_HI}("       # start of the git info string
 PROMPT_END="${BLACK_HI})"         # the end of the git info string
 PROMPT_SEPARATOR="${BLACK_HI}|"   # separates each item
+PROMPT_UPDATING="${RED_HI}…"      # marks that the info is being fetched from the remote
 PREFIX_BRANCH="${BLUE_HI}"        # the git branch that is active in the current directory
 PREFIX_STAGED="${GREEN_HI}+"      # the number of staged files/directories
 PREFIX_CONFLICTS="${RED_HI}×"     # the number of files in conflict
@@ -58,23 +59,37 @@ if [[ $? -ne 0 ]]; then
   exit 0
 fi
 
-# fetch from repo if local is stale for more than $FETCH_TIMEOUT minutes
-FETCH_HEAD="$REPO/.git/FETCH_HEAD"
-if [[ ! -e "${FETCH_HEAD}"  ||  -e `find "${FETCH_HEAD}" -mmin +${FETCH_TIMEOUT}` ]]; then
-  if [[ -n $(git remote show) ]]; then
-    ( git fetch --quiet &> /dev/null) &
-  fi
-fi
-
 # retrieve the branch status
 
 GIT_STATUS=($($GIT_STATUS_SCRIPT 2>/dev/null))
 if [[ -z $GIT_STATUS ]]; then
-  # exit if we couldn't retrieve the status
-  exit 1
+    # exit if we couldn't retrieve the status
+    exit 1
 fi
 
 GIT_BRANCH=${GIT_STATUS[0]}
+
+
+# start building the status prompt
+
+STATUS=" ${PROMPT_START}${PREFIX_BRANCH}${GIT_BRANCH}"
+
+
+# fetch from repo if local is stale for more than $FETCH_TIMEOUT minutes
+# display update info on the prompt
+
+FETCH_HEAD="$REPO/.git/FETCH_HEAD"
+if [[ ! -e "${FETCH_HEAD}"  ||  -e `find "${FETCH_HEAD}" -mmin +${FETCH_TIMEOUT}` ]]; then
+  if [[ -n $(git remote show) ]]; then
+    ( git fetch --quiet &> /dev/null) &
+    echo -e "${STATUS}${PROMPT_SEPARATOR}${PROMPT_UPDATING}${PROMPT_END}${RESET}"
+    exit 0
+  fi
+fi
+
+
+# otherwise, build based on the output of the script
+
 GIT_REMOTE=${GIT_STATUS[1]}
 if [[ "." == $GIT_REMOTE ]]; then
   unset GIT_REMOTE
@@ -86,10 +101,6 @@ GIT_UNTRACKED=${GIT_STATUS[5]}
 GIT_STASHED=${GIT_STATUS[6]}
 
 
-# build the status prompt
-
-STATUS=" ${PROMPT_START}${PREFIX_BRANCH}${GIT_BRANCH}"
-
 if [[ -n $GIT_REMOTE ]]; then
   STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_REMOTE}${GIT_REMOTE}"
 fi
@@ -97,7 +108,7 @@ if [[ $GIT_STAGED -ne 0 ]]; then
   STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_STAGED}${GIT_STAGED}"
 fi
 if [[ ${GIT_CONFLICTS} -ne 0 ]]; then
-  STATUS="${STATUS}${PREFIX_CONFLICTS}${GIT_CONFLICTS}"
+  STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_CONFLICTS}${GIT_CONFLICTS}"
 fi
 if [[ $GIT_CHANGED -ne 0 ]]; then
   STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_CHANGED}${GIT_CHANGED}"
