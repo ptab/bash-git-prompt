@@ -48,7 +48,6 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 GIT_STATUS_SCRIPT="$DIR/gitstatus.sh"
 
-
 #
 #   Start execution
 #
@@ -67,29 +66,8 @@ if [[ -z $GIT_STATUS ]]; then
     exit 1
 fi
 
+
 GIT_BRANCH=${GIT_STATUS[0]}
-
-
-# start building the status prompt
-
-STATUS=" ${PROMPT_START}${PREFIX_BRANCH}${GIT_BRANCH}"
-
-
-# fetch from repo if local is stale for more than $FETCH_TIMEOUT minutes
-# display update info on the prompt
-
-FETCH_HEAD="$REPO/.git/FETCH_HEAD"
-if [[ ! -e "${FETCH_HEAD}"  ||  -e `find "${FETCH_HEAD}" -mmin +${FETCH_TIMEOUT}` ]]; then
-  if [[ -n $(git remote show) ]]; then
-    ( git fetch --quiet &> /dev/null) &
-    echo -e "${STATUS}${PROMPT_SEPARATOR}${PROMPT_UPDATING}${PROMPT_END}${RESET}"
-    exit 0
-  fi
-fi
-
-
-# otherwise, build based on the output of the script
-
 GIT_REMOTE=${GIT_STATUS[1]}
 if [[ "." == $GIT_REMOTE ]]; then
   unset GIT_REMOTE
@@ -100,10 +78,24 @@ GIT_CHANGED=${GIT_STATUS[4]}
 GIT_UNTRACKED=${GIT_STATUS[5]}
 GIT_STASHED=${GIT_STATUS[6]}
 
+# start building the status prompt
 
-if [[ -n $GIT_REMOTE ]]; then
-  STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_REMOTE}${GIT_REMOTE}"
+STATUS=" ${PROMPT_START}${PREFIX_BRANCH}${GIT_BRANCH}"
+
+FETCH_HEAD="$REPO/.git/FETCH_HEAD"
+if [[ ! -e "${FETCH_HEAD}"  ||  -e `find "${FETCH_HEAD}" -mmin +${FETCH_TIMEOUT}` ]]; then
+  # fetch from repo if local is stale for more than $FETCH_TIMEOUT minutes
+  if [[ -n $(git remote show) ]]; then
+    ( git fetch --quiet &> /dev/null) &
+    STATUS="${STATUS}${PROMPT_SEPARATOR}${PROMPT_UPDATING}"
+  fi
+else
+  # otherwise, build based on the output of the script
+  if [[ -n $GIT_REMOTE ]]; then
+    STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_REMOTE}${GIT_REMOTE}"
+  fi
 fi
+
 if [[ $GIT_STAGED -ne 0 ]]; then
   STATUS="${STATUS}${PROMPT_SEPARATOR}${PREFIX_STAGED}${GIT_STAGED}"
 fi
